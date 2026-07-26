@@ -1,0 +1,19 @@
+# Xcode
+*.xcworkspace
+xcuserdata/
+DerivedData/
+*.xcodeproj/xcuserdata
+*.xcodeproj/project.xcworkspace
+
+# Build
+*.app
+*.dmg
+
+# OS
+.DS_Store
+
+# Icon generation
+DueDay.iconset/
+
+# Temp
+/tmp/
