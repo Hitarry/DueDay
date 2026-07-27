@@ -209,8 +209,8 @@ struct SettingsView: View {
             }
             .padding(.top, 8)
         }
-        .padding(20)
-        .frame(width: 320, height: 520)
+        .padding(16)
+        .frame(width: 280, height: 420)
         .alert("恢复数据", isPresented: $showRestoreAlert) {
             Button("恢复", role: .destructive) { performRestore() }
             Button("取消", role: .cancel) { }

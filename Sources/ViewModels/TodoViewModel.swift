@@ -8,13 +8,14 @@ final class TodoViewModel {
     var draggedItemId: UUID?
     var collapsedParentIds: Set<UUID> = []
     var showCompleted = true
-    var pinnedItemId: UUID? {
+    var pinnedItemIds: Set<UUID> = [] {
         didSet {
-            UserDefaults.standard.set(pinnedItemId?.uuidString, forKey: "pinnedItemId")
-            if let id = pinnedItemId, findItem(id) == nil {
-                pinnedItemId = nil
-                onPinChanged?(nil)
-            }
+            let arr = pinnedItemIds.map { $0.uuidString }
+            UserDefaults.standard.set(arr, forKey: "pinnedItemIds")
+            let removed = oldValue.subtracting(pinnedItemIds)
+            for id in removed { onPinChanged?(id, false) }
+            let added = pinnedItemIds.subtracting(oldValue)
+            for id in added { onPinChanged?(id, true) }
         }
     }
 
@@ -25,22 +26,25 @@ final class TodoViewModel {
     var canUndo: Bool { !undoStack.isEmpty }
     var canRedo: Bool { !redoStack.isEmpty }
 
-    // 浮动窗口位置
-    var pinnedWindowFrame: NSRect? {
+    // 浮动窗口位置（每个钉住项独立）
+    var pinnedWindowFrames: [UUID: NSRect] {
         get {
-            let x = UserDefaults.standard.double(forKey: "pinFrameX")
-            let y = UserDefaults.standard.double(forKey: "pinFrameY")
-            let w = UserDefaults.standard.double(forKey: "pinFrameW")
-            let h = UserDefaults.standard.double(forKey: "pinFrameH")
-            guard w > 0, h > 0 else { return nil }
-            return NSRect(x: x, y: y, width: w, height: h)
+            guard let data = UserDefaults.standard.data(forKey: "pinnedWindowFrames"),
+                  let dict = try? JSONDecoder().decode([String: [Double]].self, from: data)
+            else { return [:] }
+            var result: [UUID: NSRect] = [:]
+            for (key, arr) in dict where arr.count == 4 {
+                guard let id = UUID(uuidString: key), arr[2] > 0, arr[3] > 0 else { continue }
+                result[id] = NSRect(x: arr[0], y: arr[1], width: arr[2], height: arr[3])
+            }
+            return result
         }
         set {
-            if let f = newValue {
-                UserDefaults.standard.set(f.origin.x, forKey: "pinFrameX")
-                UserDefaults.standard.set(f.origin.y, forKey: "pinFrameY")
-                UserDefaults.standard.set(f.size.width, forKey: "pinFrameW")
-                UserDefaults.standard.set(f.size.height, forKey: "pinFrameH")
+            let dict = Dictionary(uniqueKeysWithValues: newValue.map { kv in
+                (kv.key.uuidString, [kv.value.origin.x, kv.value.origin.y, kv.value.size.width, kv.value.size.height])
+            })
+            if let data = try? JSONEncoder().encode(dict) {
+                UserDefaults.standard.set(data, forKey: "pinnedWindowFrames")
             }
         }
     }
@@ -63,9 +67,8 @@ final class TodoViewModel {
         loadItems()
 
         // 恢复上次钉住的记录
-        if let s = UserDefaults.standard.string(forKey: "pinnedItemId"),
-           let uuid = UUID(uuidString: s) {
-            pinnedItemId = uuid
+        if let arr = UserDefaults.standard.stringArray(forKey: "pinnedItemIds") {
+            pinnedItemIds = Set(arr.compactMap { UUID(uuidString: $0) }.filter { findItem($0) != nil })
         }
     }
 
@@ -302,16 +305,14 @@ final class TodoViewModel {
         didSet { UserDefaults.standard.set(isPinnedBreathingEnabled, forKey: "pinnedBreathingEnabled") }
     }
 
-    var onPinChanged: ((UUID?) -> Void)?
+    var onPinChanged: ((UUID, Bool) -> Void)?
 
     func pinItem(_ id: UUID) {
-        pinnedItemId = id
-        onPinChanged?(id)
+        pinnedItemIds.insert(id)
     }
 
-    func unpinItem() {
-        pinnedItemId = nil
-        onPinChanged?(nil)
+    func unpinItem(_ id: UUID) {
+        pinnedItemIds.remove(id)
     }
 
     // MARK: - 快捷键

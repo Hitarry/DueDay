@@ -42,15 +42,15 @@ struct ThemeConfig {
 
     var cardFill: Color {
         switch name {
-        case .system: return Color.primary.opacity(0.04)
-        case .dark: return Color.white.opacity(0.08)
+        case .system: return Color.primary.opacity(0.07)
+        case .dark: return Color.white.opacity(0.13)
         }
     }
 
     var cardStroke: Color {
         switch name {
-        case .system: return Color.primary.opacity(0.08)
-        case .dark: return Color.white.opacity(0.14)
+        case .system: return Color.primary.opacity(0.13)
+        case .dark: return Color.white.opacity(0.20)
         }
     }
 

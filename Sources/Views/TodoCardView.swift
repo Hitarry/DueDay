@@ -29,9 +29,13 @@ struct TodoCardView: View {
                     Button(action: { viewModel.toggleCollapseParent(itemId) }) {
                         Image(systemName: viewModel.collapsedParentIds.contains(itemId)
                               ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 9, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundColor(theme.secondaryText)
-                    }.buttonStyle(.plain)
+                            .frame(width: 18, height: 18)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: 18, height: 18)
                 }
                 // 完成勾选
                 if !viewModel.isSelectionMode {
@@ -103,14 +107,13 @@ struct TodoCardView: View {
             .stroke(completed ? Color.primary.opacity(0.04) : theme.cardStroke, lineWidth: 0.5))
         .id(itemId)
         .onHover { isHovered = $0 }
-        .onTapGesture(count: 1) {
+        .onTapGesture {
             if viewModel.isSelectionMode { viewModel.toggleSelection(itemId) }
-            else if !isEditing { showDueDatePanel = true }
         }
         .popover(isPresented: $showDueDatePanel) { DueDatePanelView(itemId: itemId, onDismiss: { showDueDatePanel = false }) }
         .contextMenu {
-            if viewModel.pinnedItemId == itemId {
-                Button(action: { viewModel.unpinItem() }) { Label("取消钉到屏幕", systemImage: "pin.slash") }
+            if viewModel.pinnedItemIds.contains(itemId) {
+                Button(action: { viewModel.unpinItem(itemId) }) { Label("取消钉到屏幕", systemImage: "pin.slash") }
             } else {
                 Button(action: { viewModel.pinItem(itemId); NotificationCenter.default.post(name: .closePopoverShortcut, object: nil) }) {
                     Label("钉到屏幕", systemImage: "pin")
@@ -170,6 +173,7 @@ struct TodoCardView: View {
         let days = total / 86400
         let hours = (total % 86400) / 3600
         let minutes = (total % 3600) / 60
+        let dateStr = dueDateFormatter.string(from: dueDate)
         return HStack(spacing: 6) {
             Image(systemName: overdue ? "exclamationmark.triangle.fill" : "timer")
                 .font(.system(size: 12)).foregroundColor(overdue ? .red : .orange)
@@ -183,7 +187,17 @@ struct TodoCardView: View {
             }
             if overdue { Text("已超期").font(.system(size: 10, weight: .semibold)).foregroundColor(.red) }
             Spacer()
+            Text(dateStr)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.red)
         }
+    }
+
+    private var dueDateFormatter: DateFormatter {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "zh_CN")
+        f.dateFormat = "yyyy/MM/dd"
+        return f
     }
 
     private func titleFont(item: TodoItem?, compact: Bool) -> Font {

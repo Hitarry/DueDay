@@ -14,13 +14,13 @@ struct PinnedItemView: View {
             // 行1：竖排按钮 + 标题
             HStack(spacing: 6) {
                 VStack(spacing: 2) {
-                    Button(action: { viewModel.unpinItem() }) {
+                    Button(action: { viewModel.unpinItem(itemId) }) {
                         ZStack {
                             Circle().fill(Color.primary.opacity(0.10)).frame(width: 18, height: 18)
                             Image(systemName: "pin.slash").font(.system(size: 10)).foregroundColor(theme.secondaryText)
                         }
                     }.buttonStyle(.plain).help("取消钉住")
-                    Button(action: { viewModel.toggleCompleted(itemId); viewModel.unpinItem() }) {
+                    Button(action: { viewModel.toggleCompleted(itemId); viewModel.unpinItem(itemId) }) {
                         Image(systemName: item?.isCompleted == true ? "checkmark.square.fill" : "square")
                             .font(.system(size: 15))
                             .foregroundColor(item?.isCompleted == true ? .green : theme.secondaryText)
