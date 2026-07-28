@@ -9,18 +9,20 @@ macOS 菜单栏倒数日 app。
 基于 [Do Now](https://github.com/your-username/do-now) 重构。保留核心的待办事项和钉住提醒功能，删除了多余功能，优化了功能，美化了界面UI和交互。
 
 ## 功能
-
-- 待办事项管理：创建、编辑、删除、完成勾选
-- 子任务支持（最多一层）
+### 新特性
 - 截止日期/时间设置（全天事件 / 精确到分钟）
 - 倒数日显示：卡片 hover 展开、悬浮窗常驻
-- 钉到屏幕：浮动窗口，自动恢复，强调显示倒数日期时间
+- 钉到屏幕：浮动窗口钉住，无数量限制，自动恢复，强调显示倒数日期时间
+- 全新极简风格界面UI，灵动交互效果
+
+### 保留特性
+- 待办事项管理：创建、编辑、删除、完成勾选
+- 子任务支持（最多一层）
 - 文字样式：49 色 / 粗体 / 斜体 / 字号
 - 300+ emoji 表情插入
 - 主题切换：系统默认 / 深邃黑色
 - 导入/导出 JSON
 - 自动备份
-- 批量选择、撤销/重做
 
 ## Requirements
 
@@ -48,7 +50,8 @@ DueDay/
 │   └── Helpers/                # 辅助函数
 ├── Resources/DueDay.icns      # 应用图标
 ├── project.yml                # XcodeGen 配置
-└── build.sh                   # 一键编译脚本
+├── build.sh                   # 一键编译脚本
+└── assets                    # 图片类资源
 ```
 
 ## 快捷键
@@ -68,10 +71,10 @@ MIT
 
 ## Support
 
-If you find Do Now helpful, consider supporting its development:
+If you find DueDay helpful, consider supporting its development:
 
 
-- **感谢赞助** — 如果Do Now对你有帮助，欢迎扫码赞助一杯咖啡 ☕
+- **感谢赞助** — 如果DueDay对你有帮助，欢迎扫码赞助一杯咖啡 ☕
 
 - <p align="center">
   <img src="assets/wechat-pay.png" width="128" >

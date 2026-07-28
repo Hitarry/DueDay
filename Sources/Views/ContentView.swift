@@ -16,10 +16,37 @@ struct PopoverContentView: View {
         let displayItems = viewModel.displayItems
 
         VStack(spacing: 0) {
-            addCard(theme: theme)
-                .padding(.horizontal, 12)
-                .padding(.top, 8)
-                .padding(.bottom, 6)
+            HStack(spacing: 6) {
+                addCard(theme: theme)
+
+                HStack(spacing: 6) {
+                    Button(action: { toggleSettings() }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 13))
+                            .foregroundColor(theme.secondaryText.opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $showSettings, arrowEdge: .top) { SettingsView().frame(width: 240, height: 320) }
+
+                    Button(action: { toggleHelp() }) {
+                        Image(systemName: "questionmark.circle")
+                            .font(.system(size: 13))
+                            .foregroundColor(theme.secondaryText.opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $showHelp, arrowEdge: .top) { helpPopoverContent }
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                        .fill(theme.secondaryText.opacity(0.12))
+                )
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+            .padding(.bottom, 6)
 
             ScrollView {
                 VStack(spacing: 0) {
@@ -40,8 +67,6 @@ struct PopoverContentView: View {
                 }
                 .padding(.bottom, 8)
             }
-
-            bottomBar(theme: theme)
         }
         .frame(width: 278, height: 450)
         .background {
@@ -93,96 +118,61 @@ struct PopoverContentView: View {
         else { showSettings = false; showHelp = true }
     }
 
-    private func bottomBar(theme: ThemeConfig) -> some View {
-        HStack(spacing: 0) {
-            Spacer()
-            HStack(spacing: 6) {
-                Button(action: { toggleSettings() }) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 13))
-                        .foregroundColor(theme.secondaryText.opacity(0.6))
-                }
-                .buttonStyle(.plain)
-                .popover(isPresented: $showSettings, arrowEdge: .top) { SettingsView().frame(width: 280, height: 420) }
-
-                Button(action: { toggleHelp() }) {
-                    Image(systemName: "questionmark.circle")
-                        .font(.system(size: 13))
-                        .foregroundColor(theme.secondaryText.opacity(0.6))
-                }
-                .buttonStyle(.plain)
-                .popover(isPresented: $showHelp, arrowEdge: .top) { helpPopoverContent }
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
-                    .fill(theme.secondaryText.opacity(0.12))
-            )
-        }
-        .padding(.horizontal, 12)
-        .padding(.bottom, 6)
-    }
-
     private var helpPopoverContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: "questionmark.circle")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.accentColor)
-                Text("帮助")
-                    .font(.system(size: 13, weight: .semibold))
+                Text("帮助").font(.system(size: 12, weight: .semibold))
                 Spacer()
             }
-            .padding(.bottom, 8)
+            .padding(.bottom, 6)
 
             Divider()
 
-            Text("快捷键").font(.system(size: 10, weight: .semibold))
-                .foregroundColor(.secondary).padding(.top, 6).padding(.bottom, 3)
+            Text("快捷键").font(.system(size: 9, weight: .semibold))
+                .foregroundColor(.secondary).padding(.top, 5).padding(.bottom, 2)
             shortcutRow("⌘Z", "撤销")
             shortcutRow("⇧⌘Z", "重做")
             shortcutRow("⌘N", "新建待办")
             shortcutRow("⌘W", "关闭弹窗")
             shortcutRow("⌘,", "设置")
             shortcutRow("⌘/", "帮助")
-            .padding(.bottom, 4)
+            .padding(.bottom, 3)
 
             Divider()
 
-            Text("操作").font(.system(size: 10, weight: .semibold))
-                .foregroundColor(.secondary).padding(.top, 6).padding(.bottom, 3)
+            Text("操作").font(.system(size: 9, weight: .semibold))
+                .foregroundColor(.secondary).padding(.top, 5).padding(.bottom, 2)
             tipRow("悬停卡片 → 操作按钮和倒数日")
             tipRow("右键记录 → 钉到屏幕 / 设置截止日期")
             tipRow("右键菜单栏图标 → 退出 DueDay")
             tipRow("可同时钉住多条待办到屏幕")
-            tipRow("右下角齿轮 → 设置 · 问号 → 帮助")
+            tipRow("顶栏齿轮 → 设置 · 问号 → 帮助")
 
-            Divider().padding(.top, 6)
+            Divider().padding(.top, 4)
         }
-        .padding(14)
-        .frame(width: 230)
+        .padding(12)
+        .frame(width: 180)
     }
 
     private func shortcutRow(_ keys: String, _ desc: String) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             Text(keys)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
                 .foregroundColor(.accentColor)
-                .frame(width: 48, alignment: .leading)
-            Text(desc).font(.system(size: 11))
+                .frame(width: 44, alignment: .leading)
+            Text(desc).font(.system(size: 10))
             Spacer()
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 1)
     }
 
     private func tipRow(_ text: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: "lightbulb")
-                .font(.system(size: 9))
-                .foregroundColor(.accentColor)
-            Text(text).font(.system(size: 10))
+        HStack(spacing: 4) {
+            Image(systemName: "lightbulb").font(.system(size: 8)).foregroundColor(.accentColor)
+            Text(text).font(.system(size: 9))
             Spacer()
         }
         .padding(.vertical, 1)
@@ -190,17 +180,17 @@ struct PopoverContentView: View {
 
     private func addCard(theme: ThemeConfig) -> some View {
         Button(action: { viewModel.addItem() }) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: "plus")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(theme.secondaryText.opacity(0.4))
                 Text("添加待办")
                     .font(.system(size: 12))
                     .foregroundColor(theme.secondaryText.opacity(0.4))
-                Spacer()
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 10)
             .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
