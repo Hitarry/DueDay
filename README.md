@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon.png" width="128" alt="Do Now">
+  <img src="assets/icon.png" width="128" >
 </p>
 
 # DueDay
@@ -8,12 +8,26 @@ macOS 菜单栏倒数日 app。
 
 基于 [Do Now](https://github.com/your-username/do-now) 重构。保留核心的待办事项和钉住提醒功能，删除了多余功能，优化了功能，美化了界面UI和交互。
 
+---
+<p align="center">
+  <img src="assets/operation.gif" width = "400" hight = "607">
+</p>
+
+----
+
 ## 功能
 ### 新特性
 - 截止日期/时间设置（全天事件 / 精确到分钟）
 - 倒数日显示：卡片 hover 展开、悬浮窗常驻
 - 钉到屏幕：浮动窗口钉住，无数量限制，自动恢复，强调显示倒数日期时间
 - 全新极简风格界面UI，灵动交互效果
+
+----
+<p align="center">
+  <img src="assets/pineditemview.gif" width = "400" hight = "250">
+</p>
+
+----
 
 ### 保留特性
 - 待办事项管理：创建、编辑、删除、完成勾选
