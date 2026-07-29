@@ -8,6 +8,7 @@ final class TodoViewModel {
     var draggedItemId: UUID?
     var collapsedParentIds: Set<UUID> = []
     var showCompleted = true
+    var sortStamp = 0  // 每次items变更时递增，强制视图刷新排序
     var pinnedItemIds: Set<UUID> = [] {
         didSet {
             let arr = pinnedItemIds.map { $0.uuidString }
@@ -74,10 +75,10 @@ final class TodoViewModel {
 
     // MARK: - Items
 
-    private func effectiveDueDate(_ item: TodoItem) -> Date? {
-        let subDates = item.subtasks.compactMap { $0.dueDate }
-        if let d = item.dueDate { return d }
-        return subDates.min()
+    func effectiveDueDate(_ item: TodoItem) -> Date? {
+        var dates = item.subtasks.compactMap { $0.dueDate }
+        if let d = item.dueDate { dates.append(d) }
+        return dates.min()
     }
 
     var topLevelItems: [TodoItem] {
@@ -87,10 +88,10 @@ final class TodoViewModel {
                 if a.isCompleted != b.isCompleted { return !a.isCompleted }
                 let aDue = effectiveDueDate(a)
                 let bDue = effectiveDueDate(b)
-                if aDue != nil && bDue == nil { return true }
-                if aDue == nil && bDue != nil { return false }
+                if aDue == nil && bDue != nil { return true }
+                if aDue != nil && bDue == nil { return false }
                 if let aD = aDue, let bD = bDue { return aD < bD }
-                return a.createdAt < b.createdAt
+                return a.createdAt > b.createdAt
             }
     }
 
@@ -479,6 +480,7 @@ final class TodoViewModel {
     // MARK: - Persistence
 
     private func saveItems() {
+        sortStamp += 1
         do {
             let data = try JSONEncoder().encode(items)
             try data.write(to: saveFile, options: .atomic)

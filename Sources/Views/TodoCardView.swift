@@ -14,7 +14,7 @@ struct TodoCardView: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        let _ = viewModel.items.count
+        let _ = viewModel.sortStamp
         let theme = ThemeConfig.config(for: viewModel.theme)
         let item = viewModel.findItem(itemId)
         let isSelected = viewModel.selectedIds.contains(itemId)
@@ -26,7 +26,10 @@ struct TodoCardView: View {
             HStack(spacing: 6) {
                 // 展开/折叠子任务
                 if !viewModel.isSelectionMode, let item = item, !item.subtasks.isEmpty {
-                    Button(action: { viewModel.toggleCollapseParent(itemId) }) {
+                    Button(action: {
+                        if isEditing { commitEdit() }
+                        viewModel.toggleCollapseParent(itemId)
+                    }) {
                         Image(systemName: viewModel.collapsedParentIds.contains(itemId)
                               ? "chevron.right" : "chevron.down")
                             .font(.system(size: 12, weight: .medium))
@@ -40,6 +43,7 @@ struct TodoCardView: View {
                 // 完成勾选
                 if !viewModel.isSelectionMode {
                     Button(action: {
+                        if isEditing { commitEdit() }
                         if let it = item, !it.subtasks.isEmpty, !it.subtasks.allSatisfy(\.isCompleted), !it.isCompleted {
                             showSubtaskAlert = true
                         } else { viewModel.toggleCompleted(itemId) }
@@ -95,7 +99,7 @@ struct TodoCardView: View {
             // 子任务
             if let item = item, !item.subtasks.isEmpty, !viewModel.collapsedParentIds.contains(itemId) {
                 VStack(spacing: 2) {
-                    ForEach(item.subtasks) { subtask in
+                    ForEach(sortedSubtasks(item.subtasks)) { subtask in
                         TodoCardView(itemId: subtask.id, isSubtask: true).padding(.leading, 20)
                     }
                 }.padding(.bottom, 2)
@@ -108,6 +112,7 @@ struct TodoCardView: View {
         .id(itemId)
         .onHover { isHovered = $0 }
         .onTapGesture {
+            if isEditing { commitEdit(); return }
             if viewModel.isSelectionMode { viewModel.toggleSelection(itemId) }
         }
         .popover(isPresented: $showDueDatePanel) { DueDatePanelView(itemId: itemId, onDismiss: { showDueDatePanel = false }) }
@@ -132,24 +137,39 @@ struct TodoCardView: View {
 
     private func cardButtons(theme: ThemeConfig, compact: Bool) -> some View {
         VStack(spacing: 5) {
-            Button(action: { showStylePicker = true }) {
+            Button(action: {
+                if isEditing { commitEdit() }
+                showStylePicker = true
+            }) {
                 Image(systemName: "textformat")
                     .font(.system(size: compact ? 9 : 11))
                     .foregroundColor(theme.secondaryText)
             }
             .buttonStyle(.plain).help("文字样式")
             .popover(isPresented: $showStylePicker) {
-                StylePickerView(itemId: itemId, viewModel: TodoViewModel.shared).frame(width: 260, height: 480)
+                StylePickerView(itemId: itemId, viewModel: TodoViewModel.shared, onInsertEmoji: { emoji in
+                    if isEditing {
+                        editingText += emoji
+                    } else {
+                        viewModel.appendToTitle(id: itemId, text: emoji)
+                    }
+                }).frame(width: 260, height: 480)
             }
             if !isSubtask {
-                Button(action: { viewModel.addSubtask(to: itemId) }) {
+                Button(action: {
+                    if isEditing { commitEdit() }
+                    viewModel.addSubtask(to: itemId)
+                }) {
                     Image(systemName: "plus.circle")
                         .font(.system(size: compact ? 9 : 11))
                         .foregroundColor(.accentColor)
                 }
                 .buttonStyle(.plain).help("添加子任务")
             }
-            Button(action: { showDeleteAlert = true }) {
+            Button(action: {
+                if isEditing { commitEdit() }
+                showDeleteAlert = true
+            }) {
                 Image(systemName: "trash")
                     .font(.system(size: compact ? 9 : 11))
                     .foregroundColor(theme.secondaryText.opacity(0.5))
@@ -185,11 +205,23 @@ struct TodoCardView: View {
                     .font(.system(size: 13, weight: .medium, design: .monospaced))
                     .foregroundColor(overdue ? .red : theme.secondaryText)
             }
-            if overdue { Text("已超期").font(.system(size: 10, weight: .semibold)).foregroundColor(.red) }
+            if overdue { Text("超期").font(.system(size: 10, weight: .semibold)).foregroundColor(.red) }
             Spacer()
             Text(dateStr)
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.red)
+        }
+    }
+
+    private func sortedSubtasks(_ subs: [TodoItem]) -> [TodoItem] {
+        subs.sorted { a, b in
+            if a.isCompleted != b.isCompleted { return !a.isCompleted }
+            let aDue = a.dueDate
+            let bDue = b.dueDate
+            if aDue == nil && bDue != nil { return true }
+            if aDue != nil && bDue == nil { return false }
+            if let aD = aDue, let bD = bDue { return aD < bD }
+            return a.createdAt > b.createdAt
         }
     }
 

@@ -5,10 +5,13 @@ struct PinnedItemView: View {
 
     @Environment(TodoViewModel.self) private var viewModel
     @State private var breathOpacity: Double = 1.0
+    @State private var now = Date()
+    private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
     var body: some View {
         let theme = ThemeConfig.config(for: viewModel.theme)
         let item = viewModel.findItem(itemId)
+        let _ = now
 
         VStack(spacing: 0) {
             // 行1：竖排按钮 + 标题
@@ -50,6 +53,7 @@ struct PinnedItemView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.primary.opacity(0.08), lineWidth: 0.5))
         .padding(6)
         .onAppear { startBreathingIfEnabled() }
+        .onReceive(timer) { _ in now = Date() }
         .onChange(of: viewModel.isPinnedBreathingEnabled) { _, e in
             e ? startBreathingIfEnabled() : withAnimation(nil) { breathOpacity = 1.0 }
         }

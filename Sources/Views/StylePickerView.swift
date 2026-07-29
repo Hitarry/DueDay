@@ -3,6 +3,7 @@ import SwiftUI
 struct StylePickerView: View {
     let itemId: UUID
     let viewModel: TodoViewModel
+    var onInsertEmoji: ((String) -> Void)?
 
     @State private var selectedColor: String? = nil
     @State private var isBold = false
@@ -151,7 +152,11 @@ struct StylePickerView: View {
     }
 
     private func insert(_ emoji: String) {
-        viewModel.appendToTitle(id: itemId, text: emoji)
+        if let cb = onInsertEmoji {
+            cb(emoji)
+        } else {
+            viewModel.appendToTitle(id: itemId, text: emoji)
+        }
         insertTrigger += 1
     }
 

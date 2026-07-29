@@ -67,7 +67,7 @@ struct TodoListView: View {
                 Spacer()
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 8) {
+                    VStack(spacing: 8) {
                         ForEach(items) { item in
                             TodoCardView(itemId: item.id, isSubtask: false)
                                 .padding(.horizontal, 12)

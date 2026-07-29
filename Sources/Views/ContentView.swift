@@ -12,8 +12,22 @@ struct PopoverContentView: View {
     @State private var showHelp = false
 
     var body: some View {
+        let _ = viewModel.sortStamp
         let theme = ThemeConfig.config(for: viewModel.theme)
-        let displayItems = viewModel.displayItems
+
+        // 排序：未完成 → 无截止日期 → 截止近 → 新
+        let allItems = viewModel.items
+            .filter { !$0.isSubtask }
+            .sorted { a, b in
+                if a.isCompleted != b.isCompleted { return !a.isCompleted }
+                let aDue = viewModel.effectiveDueDate(a)
+                let bDue = viewModel.effectiveDueDate(b)
+                if aDue == nil && bDue != nil { return true }
+                if aDue != nil && bDue == nil { return false }
+                if let aD = aDue, let bD = bDue { return aD < bD }
+                return a.createdAt > b.createdAt
+            }
+        let displayItems = viewModel.showCompleted ? allItems : allItems.filter { !$0.isCompleted }
 
         VStack(spacing: 0) {
             HStack(spacing: 6) {
@@ -51,7 +65,7 @@ struct PopoverContentView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     if !displayItems.isEmpty {
-                        LazyVStack(spacing: 8) {
+                        VStack(spacing: 8) {
                             ForEach(displayItems) { item in
                                 TodoCardView(itemId: item.id, isSubtask: false)
                                     .padding(.horizontal, 12)
